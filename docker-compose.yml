@@ -1,0 +1,11 @@
+services:
+  backend_cms:
+    build: .
+    container_name: backend_cms
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./education_cms_backend:/education_cms_backend
+    environment:
+      - PYTHONUNBUFFERED=1
