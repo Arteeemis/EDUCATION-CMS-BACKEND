@@ -3,16 +3,36 @@
 
 PageAdmin реализует визуальный конструктор: на форме редактирования
 страницы виден список блоков, размещённых на ней, с drag-and-drop
-сортировкой и возможностью добавлять/удалять блоки.
+сортировкой и удобным выпадающим списком для выбора блока.
 
-Доступ ограничен ролью администратора (редакторы не работают со страницами).
+Доступ ограничен ролью администратора.
 """
 
+from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
 from adminsortable2.admin import SortableTabularInline, SortableAdminBase
 
+from blocks.models import Block
+
 from .models import Page, PageBlock
+
+
+# ---------------------------------------------------------------------------
+# Кастомный ModelChoiceField для блоков —
+# показывает понятное название с типом блока вместо ID
+# ---------------------------------------------------------------------------
+class BlockChoiceField(forms.ModelChoiceField):
+    """Выпадающий список блоков с подписями «[Тип] Название»."""
+
+    def label_from_instance(self, obj):
+        # У полиморфной модели Block.objects.all() возвращает уже типизированные
+        # инстансы (благодаря django-polymorphic), поэтому _meta.verbose_name
+        # даёт корректный тип конкретного дочернего класса.
+        real = obj.get_real_instance() if hasattr(obj, "get_real_instance") else obj
+        type_name = real._meta.verbose_name
+        label = real.admin_label or getattr(real, "title", "") or f"Блок #{real.pk}"
+        return f"[{type_name}] {label}"
 
 
 # ---------------------------------------------------------------------------
@@ -21,18 +41,24 @@ from .models import Page, PageBlock
 class PageBlockInline(SortableTabularInline):
     """Inline-конструктор блоков на странице.
 
-    Администратор выбирает существующий блок из выпадающего списка
-    и располагает его на странице. Порядок задаётся drag-and-drop.
+    Администратор выбирает блок из выпадающего списка с понятными подписями.
+    Порядок задаётся drag-and-drop.
     """
 
     model = PageBlock
     extra = 1
     fields = ("block", "block_type", "is_visible")
     readonly_fields = ("block_type",)
-    raw_id_fields = ("block",)
 
     verbose_name = "Блок"
     verbose_name_plural = "Размещённые блоки страницы"
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        """Подмена виджета для поля block — кастомный ModelChoiceField."""
+        if db_field.name == "block":
+            kwargs["form_class"] = BlockChoiceField
+            kwargs["queryset"] = Block.objects.all().order_by("-created_at")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     @admin.display(description="Тип блока")
     def block_type(self, obj):

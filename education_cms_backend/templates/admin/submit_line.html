@@ -1,0 +1,29 @@
+{% load i18n admin_urls %}
+<div class="submit-row">
+  {% block submit-row %} {% if show_save %}<input
+    type="submit"
+    value="Сохранить"
+    class="default"
+    name="_save"
+  />{% endif %} {% if show_delete_link and original %}
+  <p class="deletelink-box">
+    <a href="{{ delete_url }}" class="deletelink">Удалить</a>
+  </p>
+  {% endif %} {% if show_save_as_new %}<input
+    type="submit"
+    value="Сохранить как новый"
+    name="_saveasnew"
+  />{% endif %} {% if show_save_and_add_another %}<input
+    type="submit"
+    value="Сохранить и добавить ещё"
+    name="_addanother"
+  />{% endif %} {% if show_save_and_continue %}<input
+    type="submit"
+    value="Сохранить и продолжить редактирование"
+    name="_continue"
+  />{% endif %} {% if show_close %}<a
+    href="{% url opts|admin_urlname:'changelist' %}"
+    class="closelink"
+    >Закрыть</a
+  >{% endif %} {% endblock %}
+</div>

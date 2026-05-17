@@ -1,19 +1,15 @@
-{% extends "admin/base.html" %}
-{% load static %}
-
-{% block title %}{{ title }} | Система единого информационного окна{% endblock %}
-
-{% block branding %}
+{% extends "admin/base.html" %} {% load static %} {% block title %}{{ title }} |
+Система единого информационного окна{% endblock %} {% block branding %}
 <h1 id="site-name">
-    <a href="{% url 'admin:index' %}">
-        Система единого информационного окна
-    </a>
+  <a href="{% url 'admin:index' %}" class="cms-brand">
+    <img
+      src="{% static 'admin/img/logo_white_no-bg.png' %}"
+      alt="МГТУ им. Н. Э. Баумана"
+      class="cms-brand__logo"
+    />
+    <span class="cms-brand__title">Система единого информационного окна</span>
+  </a>
 </h1>
-{% endblock %}
-
-{% block extrastyle %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'admin/css/admin_custom.css' %}">
-{% endblock %}
-
-{% block nav-global %}{% endblock %}
+{% endblock %} {% block extrastyle %} {{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/admin_custom.css' %}" />
+{% endblock %} {% block nav-global %}{% endblock %}

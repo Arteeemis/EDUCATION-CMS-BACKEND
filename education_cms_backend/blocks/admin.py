@@ -7,7 +7,8 @@
   ленты в режиме только для чтения (для понимания контекста публикаций).
 """
 
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.utils.safestring import mark_safe
 from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 
 from users.admin_mixins import AdminOnlyMixin, AdminWriteEditorReadMixin
@@ -61,23 +62,15 @@ class NewsFeedAdmin(AdminWriteEditorReadMixin, admin.ModelAdmin):
         "title",
         "admin_label",
         "editors_list",
-        "post_count",
+        "post_count_display",
         "created_at",
     )
     search_fields = ("title", "admin_label")
     filter_horizontal = ("editors",)
-    fieldsets = (
-        (None, {"fields": ("admin_label", "title")}),
-        ("Доступ", {"fields": ("editors",)}),
-        (
-            "Служебные даты",
-            {"classes": ("collapse",), "fields": ("created_at", "updated_at")},
-        ),
-    )
     readonly_fields = ("created_at", "updated_at")
 
     @admin.display(description="Кол-во публикаций")
-    def post_count(self, obj):
+    def post_count_display(self, obj):
         return obj.posts.count()
 
     @admin.display(description="Редакторы")
@@ -85,18 +78,79 @@ class NewsFeedAdmin(AdminWriteEditorReadMixin, admin.ModelAdmin):
         usernames = list(obj.editors.values_list("username", flat=True))
         return ", ".join(usernames) if usernames else "—"
 
+    @staticmethod
+    def _posts_word(count):
+        """Правильное склонение слова «публикация» в зависимости от числа."""
+        if count == 1:
+            return "публикация"
+        if 2 <= count <= 4:
+            return "публикации"
+        return "публикаций"
+
+    def get_fieldsets(self, request, obj=None):
+        """При наличии постов добавляем жёлтую плашку предупреждения."""
+        base_fieldsets = [
+            (None, {"fields": ("admin_label", "title")}),
+            ("Доступ", {"fields": ("editors",)}),
+            (
+                "Служебные даты",
+                {"classes": ("collapse",), "fields": ("created_at", "updated_at")},
+            ),
+        ]
+
+        if obj is not None and obj.pk:
+            post_count = obj.posts.count()
+            if post_count > 0:
+                warning_html = (
+                    '<div style="background:#fef3c7;border-left:4px solid #f59e0b;'
+                    "padding:12px 16px;border-radius:6px;color:#854d0e;font-size:13px;"
+                    'margin:0;">'
+                    "<b>Внимание:</b> при удалении этой ленты будут "
+                    "<b>безвозвратно удалены {count} {word}</b>, связанных с ней. "
+                    "Если требуется временно скрыть ленту — используйте флаг "
+                    "«Виден на сайте» в размещении блока на странице."
+                    "</div>"
+                ).format(count=post_count, word=self._posts_word(post_count))
+
+                base_fieldsets.append(
+                    (
+                        None,
+                        {
+                            "fields": (),
+                            "description": mark_safe(warning_html),
+                        },
+                    )
+                )
+        return base_fieldsets
+
     def get_queryset(self, request):
-        """Редактор видит только те ленты, где он назначен редактором."""
         qs = super().get_queryset(request)
         if request.user.is_authenticated and request.user.is_editor_role:
             return qs.filter(editors=request.user)
         return qs
 
     def get_readonly_fields(self, request, obj=None):
-        """Для редактора все поля только для чтения."""
         if request.user.is_authenticated and request.user.is_editor_role:
             return ("admin_label", "title", "editors", "created_at", "updated_at")
         return super().get_readonly_fields(request, obj)
+
+    def delete_model(self, request, obj):
+        post_count = obj.posts.count()
+        super().delete_model(request, obj)
+        if post_count > 0:
+            messages.warning(
+                request,
+                f"Вместе с лентой удалено публикаций: {post_count}.",
+            )
+
+    def delete_queryset(self, request, queryset):
+        total_posts = sum(feed.posts.count() for feed in queryset)
+        super().delete_queryset(request, queryset)
+        if total_posts > 0:
+            messages.warning(
+                request,
+                f"Вместе с лентами удалено публикаций: {total_posts}.",
+            )
 
 
 # ---------------------------------------------------------------------------

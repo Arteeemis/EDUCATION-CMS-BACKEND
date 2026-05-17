@@ -36,18 +36,21 @@ class PostAdmin(admin.ModelAdmin):
         ("Публикация", {"fields": ("is_urgent", "published_at")}),
         (
             "Служебные даты",
-            {"classes": ("collapse",), "fields": ("author", "created_at", "updated_at")},
+            {
+                "classes": ("collapse",),
+                "fields": ("author", "created_at", "updated_at"),
+            },
         ),
     )
     readonly_fields = ("author", "created_at", "updated_at")
 
     # ---------- Бейджи ----------
-    @admin.display(description="Срочно", ordering="is_urgent")
+    @admin.display(description="Важно", ordering="is_urgent")
     def urgent_badge(self, obj):
         if obj.is_urgent:
             return format_html(
                 '<span style="background:#dc2626;color:#fff;padding:2px 8px;'
-                'border-radius:10px;font-size:11px;">СРОЧНО</span>'
+                'border-radius:10px;font-size:11px;">ВАЖНО</span>'
             )
         return ""
 
@@ -62,7 +65,6 @@ class PostAdmin(admin.ModelAdmin):
 
     # ---------- Доступ к разделу ----------
     def has_module_permission(self, request):
-        """Раздел виден администратору и редактору."""
         if not request.user.is_authenticated:
             return False
         return request.user.is_admin_role or request.user.is_editor_role
@@ -71,7 +73,6 @@ class PostAdmin(admin.ModelAdmin):
         return self.has_module_permission(request)
 
     def has_add_permission(self, request):
-        """Редактор может добавлять только если у него есть назначенные ленты."""
         if not request.user.is_authenticated:
             return False
         if request.user.is_admin_role:
@@ -86,7 +87,6 @@ class PostAdmin(admin.ModelAdmin):
         if request.user.is_admin_role:
             return True
         if request.user.is_editor_role:
-            # На уровне списка — да; объектные проверки делает get_queryset
             if obj is None:
                 return True
             return obj.news_feed.editors.filter(pk=request.user.pk).exists()
@@ -97,7 +97,6 @@ class PostAdmin(admin.ModelAdmin):
 
     # ---------- Фильтрация queryset ----------
     def get_queryset(self, request):
-        """Редактор видит только посты в своих лентах."""
         qs = super().get_queryset(request).select_related("news_feed", "author")
         if request.user.is_authenticated and request.user.is_editor_role:
             return qs.filter(news_feed__editors=request.user)
@@ -105,7 +104,6 @@ class PostAdmin(admin.ModelAdmin):
 
     # ---------- Ограничение выбора в FK ----------
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        """Редактор в выпадашке news_feed видит только свои ленты."""
         if (
             db_field.name == "news_feed"
             and request.user.is_authenticated
@@ -116,7 +114,6 @@ class PostAdmin(admin.ModelAdmin):
 
     # ---------- Автоматическое заполнение автора ----------
     def save_model(self, request, obj, form, change):
-        """Автор всегда = текущий пользователь (на создании)."""
         if not change or not obj.author_id:
             obj.author = request.user
         super().save_model(request, obj, form, change)

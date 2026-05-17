@@ -3,20 +3,24 @@
    Цветовая схема: белый фон + тёмно-синий акцент
    ============================================================ */
 
-:root {
-  --cms-primary: #1e3a8a; /* тёмно-синий */
-  --cms-primary-dark: #1e2a6a; /* при наведении */
-  --cms-primary-light: #3b5bd9; /* светлее для второстепенных акцентов */
+:root,
+:root[data-theme="light"],
+:root[data-theme="auto"],
+html,
+html[data-theme="light"],
+html[data-theme="auto"] {
+  --cms-primary: #1e3a8a;
+  --cms-primary-dark: #1e2a6a;
+  --cms-primary-light: #3b5bd9;
   --cms-bg: #ffffff;
   --cms-bg-soft: #f8fafc;
   --cms-border: #e2e8f0;
   --cms-text: #0f172a;
   --cms-text-muted: #64748b;
 
-  /* Перебиваем переменные Django */
   --primary: var(--cms-primary);
   --secondary: var(--cms-primary);
-  --accent: var(--cms-primary-light);
+  --accent: var(--cms-primary);
   --primary-fg: #ffffff;
 
   --header-color: #ffffff;
@@ -30,12 +34,16 @@
 
   --link-fg: var(--cms-primary);
   --link-hover-color: var(--cms-primary-dark);
+  --link-selected-fg: var(--cms-primary-dark);
 
   --button-bg: var(--cms-primary);
   --button-fg: #ffffff;
   --button-hover-bg: var(--cms-primary-dark);
   --default-button-bg: var(--cms-primary);
   --default-button-hover-bg: var(--cms-primary-dark);
+
+  --close-button-bg: #64748b;
+  --close-button-hover-bg: #475569;
 
   --object-tools-bg: var(--cms-primary);
   --object-tools-fg: #ffffff;
@@ -44,9 +52,32 @@
   --body-bg: var(--cms-bg);
   --body-fg: var(--cms-text);
   --body-quiet-color: var(--cms-text-muted);
+  --body-loud-color: var(--cms-text);
 
   --selected-bg: #eef2ff;
   --selected-row: #eef2ff;
+
+  --darkened-bg: var(--cms-bg-soft);
+  --hairline-color: var(--cms-border);
+  --border-color: var(--cms-border);
+}
+
+:root[data-theme="dark"],
+html[data-theme="dark"] {
+  --primary: var(--cms-primary);
+  --secondary: var(--cms-primary);
+  --accent: var(--cms-primary);
+  --header-bg: var(--cms-primary);
+  --breadcrumbs-bg: var(--cms-primary-dark);
+  --body-bg: #ffffff;
+  --body-fg: #0f172a;
+  --darkened-bg: #f8fafc;
+  --selected-bg: #eef2ff;
+  --selected-row: #eef2ff;
+}
+
+button.theme-toggle {
+  display: none !important;
 }
 
 /* ----------- Базовая типографика ----------- */
@@ -82,18 +113,36 @@ body {
   color: #fff;
 }
 
+/* ----------- User tools — унифицированный стиль ссылок ----------- */
 #user-tools {
   font-size: 13px;
+  font-family: inherit;
 }
 
-#user-tools a {
-  border-bottom-color: rgba(255, 255, 255, 0.4);
+#user-tools a,
+#user-tools a:link,
+#user-tools a:visited,
+#logout-form button {
+  color: #fff !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 0 0 1px 0;
+  background: transparent !important;
+  border-radius: 0;
+  cursor: pointer;
 }
 
 #user-tools a:hover,
-#user-tools a:focus {
-  color: #fff;
-  border-bottom-color: #fff;
+#user-tools a:focus,
+#logout-form button:hover {
+  color: #fff !important;
+  border-bottom-color: #fff !important;
+  background: transparent !important;
 }
 
 /* ----------- Хлебные крошки ----------- */
@@ -112,7 +161,7 @@ div.breadcrumbs a:hover {
   color: #fff;
 }
 
-/* ----------- Модули и панели ----------- */
+/* ----------- Модули и панели — единый тёмно-синий ----------- */
 .module {
   background: #fff;
   border: 1px solid var(--cms-border);
@@ -123,9 +172,14 @@ div.breadcrumbs a:hover {
 
 .module h2,
 .module caption,
-.inline-group h2 {
-  background: var(--cms-primary);
-  color: #fff;
+.inline-group h2,
+.module.aligned h2,
+fieldset.module h2,
+fieldset.collapse h2,
+fieldset.collapsed h2,
+.selector h2 {
+  background: var(--cms-primary) !important;
+  color: #fff !important;
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
@@ -134,8 +188,14 @@ div.breadcrumbs a:hover {
 }
 
 .module > h2 a,
-.inline-group h2 a {
-  color: #fff;
+.inline-group h2 a,
+fieldset.collapse h2 a,
+fieldset.collapsed h2 a {
+  color: #fff !important;
+}
+
+fieldset.module {
+  border: 1px solid var(--cms-border);
 }
 
 /* ----------- Кнопки ----------- */
@@ -173,9 +233,29 @@ input[type="submit"].default:hover {
   background: var(--cms-primary-dark);
 }
 
-/* «Опасные» кнопки удаления оставляем красными */
+#changelist-search input[type="submit"],
+#changelist-form button[type="submit"],
+.actions button,
+.actions input[type="submit"] {
+  background: var(--cms-primary) !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+#changelist-search input[type="submit"]:hover,
+#changelist-form button[type="submit"]:hover,
+.actions button:hover {
+  background: var(--cms-primary-dark) !important;
+}
+
 .deletelink,
-a.deletelink {
+a.deletelink,
+input.deletelink {
+  margin-top: 9px !important;
   background: #dc2626 !important;
   color: #fff !important;
 }
@@ -184,7 +264,7 @@ a.deletelink {
   background: #b91c1c !important;
 }
 
-/* ----------- Object tools (кнопки «Добавить», «История») ----------- */
+/* ----------- Object tools ----------- */
 .object-tools a:link,
 .object-tools a:visited {
   background: var(--cms-primary);
@@ -209,13 +289,34 @@ input[type="email"],
 input[type="url"],
 input[type="number"],
 input[type="search"],
-textarea,
-select {
+textarea {
   border: 1px solid var(--cms-border);
   border-radius: 6px;
   padding: 8px 10px;
   font-size: 14px;
+  line-height: 1.4;
   background: #fff;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+select {
+  border: 1px solid var(--cms-border);
+  border-radius: 6px;
+  padding: 6px 28px 6px 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  height: 36px;
+  background-color: #fff;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8.5L1.5 4h9z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -258,7 +359,7 @@ table {
   background: #eef2ff;
 }
 
-/* ----------- Inline блоков — выделяем как карточки ----------- */
+/* ----------- Inline блоков ----------- */
 .inline-related {
   border: 1px solid var(--cms-border);
   border-radius: 6px;
@@ -279,13 +380,14 @@ table {
   color: var(--cms-primary);
 }
 
-/* Drag handle от django-admin-sortable2 */
 .sortable-handle {
   background-color: var(--cms-primary) !important;
 }
 
-/* ----------- Submit row внизу формы ----------- */
+/* ----------- Submit row ----------- */
 .submit-row {
+  display: flex;
+  align-items: center;
   background: var(--cms-bg-soft);
   border: 1px solid var(--cms-border);
   border-radius: 8px;
@@ -293,7 +395,7 @@ table {
   margin-top: 20px;
 }
 
-/* ----------- Боковая колонка дашборда ----------- */
+/* ----------- Боковая колонка ----------- */
 #content-related {
   background: var(--cms-bg-soft);
   border-radius: 8px;
@@ -303,48 +405,243 @@ table {
 #content-related h2,
 #content-related h3 {
   color: var(--cms-text);
-  background: transparent;
+  background: transparent !important;
   border-bottom: 1px solid var(--cms-border);
   padding: 8px 0;
+  font-size: 14px;
 }
 
-/* ----------- Сообщения ----------- */
+#content-related .module h2 {
+  background: transparent !important;
+  color: var(--cms-text) !important;
+}
+
+#content-related .module h3 {
+  display: none;
+}
+
+/* ----------- Фильтры справа от списка ----------- */
+#changelist-filter {
+  background: var(--cms-bg-soft);
+  border: 1px solid var(--cms-border);
+  border-radius: 8px;
+  padding: 0;
+  overflow: hidden;
+}
+
+#changelist-filter h2 {
+  background: var(--cms-primary);
+  color: #fff;
+  padding: 10px 14px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* (1) Иконка-глаз "Показать счётчики" — выравнивание + отступ */
+#changelist-filter details summary,
+#changelist-filter h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-weight: 500;
+}
+
+.filtered .toggle-counts,
+#toggle-filter-counts,
+a.toggle-counts {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+}
+
+.filtered .toggle-counts img,
+#toggle-filter-counts img,
+a.toggle-counts img,
+#changelist-filter img.icon,
+#changelist-filter .viewlink,
+#changelist-filter a img {
+  vertical-align: middle !important;
+  margin-right: 6px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  position: relative;
+}
+
+/* ----------- (5) Сообщения — стилизуем и отделяем ----------- */
+ul.messagelist {
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+ul.messagelist li {
+  padding: 12px 18px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  border-left: 4px solid;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
 ul.messagelist li.success {
   background: #dcfce7;
   color: #166534;
-  border-left: 4px solid #16a34a;
+  border-left-color: #16a34a;
 }
 
 ul.messagelist li.warning {
   background: #fef3c7;
   color: #854d0e;
-  border-left: 4px solid #f59e0b;
+  border-left-color: #f59e0b;
 }
 
 ul.messagelist li.error {
   background: #fee2e2;
   color: #991b1b;
-  border-left: 4px solid #dc2626;
+  border-left-color: #dc2626;
 }
 
-/* ----------- Боковое меню (Django 4.1+) ----------- */
+ul.messagelist li.info {
+  background: #dbeafe;
+  color: #1e3a8a;
+  border-left-color: var(--cms-primary);
+}
+
+/* Отступ от sidebar и сверху на странице со списком */
+.main > .content > .content-main {
+  padding-top: 0;
+}
+
+#content-start ul.messagelist,
+#content > ul.messagelist,
+.main ul.messagelist {
+  margin: 16px 24px 20px 24px;
+}
+
+/* ----------- Боковое меню (sidebar) ----------- */
 #nav-sidebar {
   background: var(--cms-bg-soft);
   border-right: 1px solid var(--cms-border);
+  padding-top: 12px;
 }
 
-#nav-sidebar .current-app .section:link,
-#nav-sidebar .current-app .section:visited {
-  color: var(--cms-primary);
+/* (4) Падинги для инпута фильтрации */
+#nav-filter,
+.main #nav-filter {
+  padding: 8px 12px !important;
+  margin: 0 12px 12px 12px !important;
+  border-radius: 6px;
+  border: 1px solid var(--cms-border);
+  width: calc(100% - 24px);
+  box-sizing: border-box;
+  font-size: 13px;
+}
+
+#nav-filter:focus {
+  border-color: var(--cms-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+}
+
+/* (3, 9) Активный пункт меню — оставляем текст читаемым + фиксируем иконку + */
+#nav-sidebar .current-model,
+#nav-sidebar tr.current-model {
+  background: #eef2ff !important;
+}
+
+#nav-sidebar .current-model th,
+#nav-sidebar .current-model td,
+#nav-sidebar tr.current-model th,
+#nav-sidebar tr.current-model td {
+  background: #eef2ff !important;
+}
+
+#nav-sidebar .current-model a,
+#nav-sidebar tr.current-model a {
+  color: var(--cms-primary) !important;
   font-weight: 600;
 }
 
+/* Hover в sidebar */
 #nav-sidebar a:hover {
   background: #eef2ff;
-  color: var(--cms-primary);
+  color: var(--cms-primary) !important;
 }
 
-/* ----------- Бейджи статуса (используются в list_display) ----------- */
+#nav-sidebar tr:hover {
+  background: #eef2ff !important;
+}
+
+#nav-sidebar tr:hover th,
+#nav-sidebar tr:hover td {
+  background: #eef2ff !important;
+}
+
+#nav-sidebar tr:hover a {
+  color: var(--cms-primary) !important;
+}
+
+/* (9) Иконка "+" возле "Добавить" — не должна сливаться с фоном */
+#nav-sidebar .addlink,
+#nav-sidebar a.addlink {
+  color: #16a34a !important;
+}
+
+#nav-sidebar .addlink::before,
+#nav-sidebar a.addlink::before {
+  color: #16a34a !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #16a34a !important;
+}
+
+#nav-sidebar tr:hover .addlink,
+#nav-sidebar tr:hover a.addlink,
+#nav-sidebar .current-model .addlink,
+#nav-sidebar tr.current-model a.addlink {
+  color: #16a34a !important;
+}
+
+#nav-sidebar tr:hover .addlink::before,
+#nav-sidebar .current-model .addlink::before,
+#nav-sidebar tr.current-model a.addlink::before {
+  color: #16a34a !important;
+  -webkit-text-fill-color: #16a34a !important;
+}
+
+/* ----------- Selector (filter_horizontal) ----------- */
+.selector .selector-chosen h2,
+.selector h2 {
+  background: var(--cms-primary) !important;
+  color: #fff !important;
+}
+
+.selector .selector-available h2 {
+  background: var(--cms-bg-soft) !important;
+  color: var(--cms-text) !important;
+  border-bottom: 1px solid var(--cms-border);
+}
+
+.selector-chosen .selector-chosen-title,
+.selector-available .selector-available-title {
+  background: var(--cms-primary);
+  color: #fff;
+}
+
+.selector-available .selector-available-title {
+  background: var(--cms-bg-soft);
+  color: var(--cms-text);
+}
+
+/* Подпись (поз. N) — скрыто */
+.dynamic-page_blocks h3,
+.inline-group .tabular tr.has_original td .original p {
+  display: none;
+}
+
+/* ----------- Бейдж статуса ----------- */
 .status-badge {
   display: inline-block;
   padding: 2px 10px;
@@ -353,4 +650,352 @@ ul.messagelist li.error {
   font-weight: 500;
   color: #fff;
   background: var(--cms-primary);
+}
+
+/* ============================================================
+   (8) Страница логина — современный простой стиль
+   ============================================================ */
+
+body.login {
+  background: var(--cms-bg-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+body.login #container {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 0;
+  min-width: auto;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.login #header {
+  background: var(--cms-primary);
+  color: #fff;
+  border-radius: 12px 12px 0 0;
+  padding: 20px 28px;
+  border-bottom: none;
+  text-align: center;
+}
+
+body.login #header #branding h1 {
+  color: #fff;
+  font-size: 18px;
+  margin: 0;
+  text-align: center;
+}
+
+body.login #header #branding h1 a {
+  color: #fff;
+}
+
+body.login #user-tools {
+  display: none;
+}
+
+body.login #content {
+  padding: 28px;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+  border: 1px solid var(--cms-border);
+  border-top: none;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.login #content-main {
+  width: 100%;
+}
+
+body.login .form-row {
+  border: none;
+  padding: 0 0 16px 0;
+  background: transparent;
+}
+
+body.login .form-row label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--cms-text);
+}
+
+body.login .form-row input[type="text"],
+body.login .form-row input[type="password"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  font-size: 14px;
+  background: #fff;
+  border: 1px solid var(--cms-border);
+  border-radius: 6px;
+}
+
+body.login .form-row input:focus {
+  border-color: var(--cms-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+  outline: none;
+}
+
+/* Убираем рамку и фон у submit-row на логине — оставляем чистую кнопку */
+body.login .submit-row {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-top: 8px;
+  text-align: center;
+}
+
+body.login .submit-row input[type="submit"] {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--cms-primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+body.login .submit-row input[type="submit"]:hover {
+  background: var(--cms-primary-dark);
+}
+
+body.login .password-reset-link {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+body.login .password-reset-link a {
+  color: var(--cms-primary);
+}
+
+body.login .errornote,
+body.login p.errornote {
+  background: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #dc2626;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 0 0 16px 0;
+  font-size: 13px;
+}
+
+/* ============================================================
+   Логотип в шапке админки
+   ============================================================ */
+
+/* Контейнер бренда — логотип + текст в одну строку */
+#branding h1 a.cms-brand,
+#branding h1 a.cms-brand:link,
+#branding h1 a.cms-brand:visited {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.cms-brand__logo {
+  height: 50px;
+  width: auto;
+  display: block;
+  /* Если у логотипа окажется не вполне прозрачный фон —
+       multiply скроет чёрный фон на тёмно-синем хедере */
+  /* mix-blend-mode: screen; */
+}
+
+.cms-brand__title {
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+/* На странице логина — логотип покрупнее, текст под ним по центру */
+body.login #branding h1 a.cms-brand {
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+
+body.login .cms-brand__logo {
+  height: 56px;
+}
+
+body.login .cms-brand__title {
+  font-size: 16px;
+  white-space: normal;
+}
+
+/* ============================================================
+   Универсальные подписи без склонения по моделям
+   ============================================================ */
+
+/* ---------- Кнопка «+ Добавить» (object-tools) ---------- */
+.object-tools .addlink {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 90px !important;
+  font-size: 0 !important;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.object-tools .addlink::before {
+  font-size: 14px !important;
+  line-height: 1;
+  margin: 0;
+}
+
+.object-tools .addlink::after {
+  margin-left: -10px;
+  content: "Добавить";
+  font-size: 14px !important;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* ---------- Заголовки страниц ---------- */
+/* Django формирует:
+   - "Изменить страница"           — на форме редактирования (body.change-form)
+   - "Добавить страница"           — на форме создания (body.add-form)
+   - "Выберите Страница для изменения" — на списке записей (body.change-list)
+*/
+
+/* Скрываем оригинальный h1 во всех трёх случаях */
+body.change-form #content > h1,
+body.change-form #content-main > h1,
+body.add-form #content > h1,
+body.add-form #content-main > h1,
+body.change-list #content > h1,
+body.change-list #content-main > h1 {
+  font-size: 0;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+/* Подставляем универсальные тексты */
+body.change-form #content > h1::after {
+  content: "Изменить запись";
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--cms-text);
+}
+
+body.add-form #content > h1::after {
+  content: "Добавить запись";
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--cms-text);
+}
+
+body.change-list #content > h1::after {
+  content: "Выберите запись для изменения";
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--cms-text);
+}
+
+/* ============================================================
+   Страница смены пароля — вертикальная раскладка с отступами
+   ============================================================ */
+
+body.change-form.users-user form#user_form fieldset.aligned .form-row,
+body.users-user form fieldset.aligned .form-row {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cms-border);
+  display: block;
+}
+
+body.users-user form fieldset.aligned .form-row:last-child {
+  border-bottom: none;
+}
+
+/* Лейбл сверху, на всю ширину */
+body.users-user form fieldset.aligned .form-row > label {
+  display: block;
+  float: none;
+  width: auto;
+  padding: 0 0 6px 0;
+  margin: 0;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--cms-text);
+  text-align: left;
+}
+
+/* Поле ввода — нормальной ширины */
+body.users-user form fieldset.aligned .form-row input[type="password"],
+body.users-user form fieldset.aligned .form-row input[type="text"] {
+  width: 100%;
+  max-width: 420px;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+/* Подсказки под полем, не уезжают вправо */
+body.users-user form fieldset.aligned .form-row .help,
+body.users-user form fieldset.aligned .form-row .helptext {
+  display: block;
+  margin: 8px 0 0 0;
+  padding: 0;
+  font-size: 12px;
+  color: var(--cms-text-muted);
+  max-width: 600px;
+}
+
+/* Ошибки выровнены слева */
+body.users-user form fieldset.aligned .form-row .errorlist {
+  margin: 0 0 8px 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Заголовок «Введите новый пароль…» — отступ от заголовка */
+body.users-user form#user_form > div > p {
+  padding: 0 4px;
+  margin: 0 0 16px 0;
+  color: var(--cms-text);
+}
+
+/* Submit row внизу — выравниваем влево с отступами */
+body.users-user form .submit-row {
+  margin-top: 20px;
+  padding: 16px 20px;
+  text-align: left;
+}
+
+.app-blocks.model-newsfeed fieldset.module:not(:has(h2)):not(:has(.form-row)) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 16px 0 32px 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.app-blocks.model-newsfeed
+  fieldset.module:not(:has(h2)):not(:has(.form-row))
+  .description {
+  margin: 0;
+  padding: 0;
 }

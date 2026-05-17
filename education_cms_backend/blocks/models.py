@@ -28,7 +28,7 @@ class Block(PolymorphicModel):
         help_text="Технический идентификатор типа блока",
     )
     admin_label = models.CharField(
-        verbose_name="Название для админки",
+        verbose_name="Название в системе",
         max_length=128,
         blank=True,
         help_text="Подпись блока в списке для удобства администратора",

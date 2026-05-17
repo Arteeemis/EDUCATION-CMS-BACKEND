@@ -83,4 +83,5 @@ class PageBlock(models.Model):
         unique_together = [("page", "block")]
 
     def __str__(self):
-        return f"{self.page.title} → {self.block} (поз. {self.position})"
+        # Краткое представление — без позиции (порядок виден по таблице)
+        return f"{self.block}" if self.block_id else "Новый блок"

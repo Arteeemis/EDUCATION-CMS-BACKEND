@@ -43,10 +43,12 @@ class Post(models.Model):
         blank=True,
         help_text="Через запятую, например: важно, новости, ИУ-5",
     )
+    # Поле в БД остаётся is_urgent — не ломаем миграции.
+    # Меняем только отображаемое название на «Важная публикация».
     is_urgent = models.BooleanField(
-        verbose_name="Срочная публикация",
+        verbose_name="Важная публикация",
         default=False,
-        help_text="Срочные публикации выделяются в ленте",
+        help_text="Важные публикации выделяются в ленте",
     )
     published_at = models.DateTimeField(
         verbose_name="Дата публикации",
