@@ -1,26 +1,9 @@
-"""Админ-регистрация пунктов меню (только для администратора)."""
+"""
+Управление пунктами меню осуществляется через inline-конструктор
+в форме блока меню (HeaderLinksBlock). Отдельная регистрация
+HeaderLink в админке намеренно не выполняется, чтобы не дублировать
+интерфейс редактирования.
+"""
 
-from django.contrib import admin
-from adminsortable2.admin import SortableAdminMixin
-
-from users.admin_mixins import AdminOnlyMixin
-
-from .models import HeaderLink
-
-
-@admin.register(HeaderLink)
-class HeaderLinkAdmin(AdminOnlyMixin, SortableAdminMixin, admin.ModelAdmin):
-    list_display = ("title", "block", "target_page", "external_url", "is_visible", "position")
-    list_filter = ("block", "is_visible")
-    search_fields = ("title", "external_url")
-    autocomplete_fields = ("block", "target_page")
-    fieldsets = (
-        (None, {"fields": ("block", "title", "is_visible")}),
-        (
-            "Куда ведёт ссылка",
-            {
-                "description": "Заполните либо внутреннюю страницу, либо внешний URL",
-                "fields": ("target_page", "external_url"),
-            },
-        ),
-    )
+# Намеренно пусто: HeaderLink редактируется через HeaderLinkInline
+# в blocks/admin.py

@@ -999,3 +999,37 @@ body.users-user form .submit-row {
   margin: 0;
   padding: 0;
 }
+
+/* ============================================================
+   Inline пунктов меню — убираем related-кнопки рядом с
+   выпадашкой целевой страницы (карандаш, +, крестик, глаз).
+   Управление страницами происходит в своём разделе.
+   ============================================================ */
+
+.app-blocks.model-headerlinksblock .related-widget-wrapper-link,
+.app-blocks.model-headerlinksblock .related-lookup,
+.app-blocks.model-headerlinksblock .related-widget-wrapper > a {
+  display: none !important;
+}
+
+/* ============================================================
+   Info-плашка на форме страницы
+   Убираем обрамляющий fieldset.module, чтобы плашка прилегала к границам.
+   ============================================================ */
+
+.app-pages.model-page fieldset.module:not(:has(h2)):not(:has(.form-row)) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 16px 0 0 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.app-pages.model-page
+  fieldset.module:not(:has(h2)):not(:has(.form-row))
+  .description {
+  margin: 0;
+  padding: 0;
+}

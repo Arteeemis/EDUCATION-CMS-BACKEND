@@ -11,6 +11,7 @@ from django.contrib import admin, messages
 from django.utils.safestring import mark_safe
 from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 
+from navigation.models import HeaderLink
 from users.admin_mixins import AdminOnlyMixin, AdminWriteEditorReadMixin
 
 from .models import (
@@ -80,7 +81,6 @@ class NewsFeedAdmin(AdminWriteEditorReadMixin, admin.ModelAdmin):
 
     @staticmethod
     def _posts_word(count):
-        """Правильное склонение слова «публикация» в зависимости от числа."""
         if count == 1:
             return "публикация"
         if 2 <= count <= 4:
@@ -88,7 +88,6 @@ class NewsFeedAdmin(AdminWriteEditorReadMixin, admin.ModelAdmin):
         return "публикаций"
 
     def get_fieldsets(self, request, obj=None):
-        """При наличии постов добавляем жёлтую плашку предупреждения."""
         base_fieldsets = [
             (None, {"fields": ("admin_label", "title")}),
             ("Доступ", {"fields": ("editors",)}),
@@ -97,7 +96,6 @@ class NewsFeedAdmin(AdminWriteEditorReadMixin, admin.ModelAdmin):
                 {"classes": ("collapse",), "fields": ("created_at", "updated_at")},
             ),
         ]
-
         if obj is not None and obj.pk:
             post_count = obj.posts.count()
             if post_count > 0:
@@ -105,20 +103,16 @@ class NewsFeedAdmin(AdminWriteEditorReadMixin, admin.ModelAdmin):
                     '<div style="background:#fef3c7;border-left:4px solid #f59e0b;'
                     "padding:12px 16px;border-radius:6px;color:#854d0e;font-size:13px;"
                     'margin:0;">'
-                    "<b>Внимание:</b> при удалении этой ленты будут "
+                    "⚠ <b>Внимание:</b> при удалении этой ленты будут "
                     "<b>безвозвратно удалены {count} {word}</b>, связанных с ней. "
                     "Если требуется временно скрыть ленту — используйте флаг "
                     "«Виден на сайте» в размещении блока на странице."
                     "</div>"
                 ).format(count=post_count, word=self._posts_word(post_count))
-
                 base_fieldsets.append(
                     (
                         None,
-                        {
-                            "fields": (),
-                            "description": mark_safe(warning_html),
-                        },
+                        {"fields": (), "description": mark_safe(warning_html)},
                     )
                 )
         return base_fieldsets
@@ -139,8 +133,7 @@ class NewsFeedAdmin(AdminWriteEditorReadMixin, admin.ModelAdmin):
         super().delete_model(request, obj)
         if post_count > 0:
             messages.warning(
-                request,
-                f"Вместе с лентой удалено публикаций: {post_count}.",
+                request, f"Вместе с лентой удалено публикаций: {post_count}."
             )
 
     def delete_queryset(self, request, queryset):
@@ -148,20 +141,37 @@ class NewsFeedAdmin(AdminWriteEditorReadMixin, admin.ModelAdmin):
         super().delete_queryset(request, queryset)
         if total_posts > 0:
             messages.warning(
-                request,
-                f"Вместе с лентами удалено публикаций: {total_posts}.",
+                request, f"Вместе с лентами удалено публикаций: {total_posts}."
             )
 
 
 # ---------------------------------------------------------------------------
-# Блок-меню (только администратор)
+# Меню (шапка) — inline-конструктор ссылок прямо в форме блока
 # ---------------------------------------------------------------------------
+class HeaderLinkInline(SortableInlineAdminMixin, admin.TabularInline):
+    """Пункты меню как inline внутри блока меню.
+
+    Показываем только два поля: заголовок и целевую страницу.
+    Поля external_url и is_visible скрыты, но остаются в модели —
+    их значения по умолчанию (пустая строка и True) подходят
+    для штатной работы.
+    """
+
+    model = HeaderLink
+    extra = 1
+    fields = ("title", "target_page")
+    autocomplete_fields = ("target_page",)
+    verbose_name = "Пункт меню"
+    verbose_name_plural = "Пункты меню"
+
+
 @admin.register(HeaderLinksBlock)
-class HeaderLinksBlockAdmin(AdminOnlyMixin, admin.ModelAdmin):
+class HeaderLinksBlockAdmin(AdminOnlyMixin, SortableAdminBase, admin.ModelAdmin):
     list_display = ("id", "admin_label", "link_count", "created_at")
     search_fields = ("admin_label",)
     fields = ("admin_label", "created_at", "updated_at")
     readonly_fields = ("created_at", "updated_at")
+    inlines = [HeaderLinkInline]
 
     @admin.display(description="Кол-во ссылок")
     def link_count(self, obj):
@@ -188,10 +198,7 @@ class FooterContactsBlockAdmin(AdminOnlyMixin, admin.ModelAdmin):
                 )
             },
         ),
-        (
-            "Социальные сети",
-            {"fields": ("vk_url", "tg_url", "max_url")},
-        ),
+        ("Социальные сети", {"fields": ("vk_url", "tg_url", "max_url")}),
         (
             "Служебные даты",
             {"classes": ("collapse",), "fields": ("created_at", "updated_at")},

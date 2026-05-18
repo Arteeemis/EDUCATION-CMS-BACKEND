@@ -11,6 +11,7 @@ PageAdmin реализует визуальный конструктор: на �
 from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from adminsortable2.admin import SortableTabularInline, SortableAdminBase
 
 from blocks.models import Block
@@ -19,16 +20,12 @@ from .models import Page, PageBlock
 
 
 # ---------------------------------------------------------------------------
-# Кастомный ModelChoiceField для блоков —
-# показывает понятное название с типом блока вместо ID
+# Кастомный ModelChoiceField для блоков
 # ---------------------------------------------------------------------------
 class BlockChoiceField(forms.ModelChoiceField):
     """Выпадающий список блоков с подписями «[Тип] Название»."""
 
     def label_from_instance(self, obj):
-        # У полиморфной модели Block.objects.all() возвращает уже типизированные
-        # инстансы (благодаря django-polymorphic), поэтому _meta.verbose_name
-        # даёт корректный тип конкретного дочернего класса.
         real = obj.get_real_instance() if hasattr(obj, "get_real_instance") else obj
         type_name = real._meta.verbose_name
         label = real.admin_label or getattr(real, "title", "") or f"Блок #{real.pk}"
@@ -54,7 +51,6 @@ class PageBlockInline(SortableTabularInline):
     verbose_name_plural = "Размещённые блоки страницы"
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        """Подмена виджета для поля block — кастомный ModelChoiceField."""
         if db_field.name == "block":
             kwargs["form_class"] = BlockChoiceField
             kwargs["queryset"] = Block.objects.all().order_by("-created_at")
@@ -80,12 +76,32 @@ class PageAdmin(SortableAdminBase, admin.ModelAdmin):
     list_filter = ("status",)
     search_fields = ("title", "slug")
     prepopulated_fields = {"slug": ("title",)}
-    fieldsets = (
-        (None, {"fields": ("title", "slug", "status")}),
-        ("Служебные даты", {"fields": ("created_at", "updated_at")}),
-    )
     readonly_fields = ("created_at", "updated_at")
     inlines = [PageBlockInline]
+
+    def get_fieldsets(self, request, obj=None):
+        """Добавляем нейтральную подсказку про header/footer под конструктором."""
+        info_html = (
+            '<div style="background:#eef2ff;border-left:4px solid #1e3a8a;'
+            "padding:12px 16px;border-radius:6px;color:#1e3a8a;font-size:13px;"
+            'margin:0 0 32px 0;">'
+            "<b>Обратите внимание:</b> позиция блоков «Меню (шапка)» и "
+            "«Контакты (подвал)» в порядке размещения не влияет на их "
+            "отображение. Эти блоки всегда зафиксированы сверху и снизу "
+            "страницы соответственно."
+            "</div>"
+        )
+        return (
+            (None, {"fields": ("title", "slug", "status")}),
+            ("Служебные даты", {"fields": ("created_at", "updated_at")}),
+            (
+                None,
+                {
+                    "fields": (),
+                    "description": mark_safe(info_html),
+                },
+            ),
+        )
 
     @admin.display(description="Статус", ordering="status")
     def status_badge(self, obj):
