@@ -4,6 +4,11 @@
 PageListSerializer — для списка страниц (краткая информация).
 PageDetailSerializer — для полной страницы с массивом блоков, готовых
 к рендеру на фронте.
+
+Важно: API отдаёт ВСЕ блоки страницы вместе с их флагом is_visible.
+Фильтрация по видимости — ответственность фронта, потому что для разных
+типов блоков «невидимость» означает разное (для header/footer — скрыть
+глобальный элемент на этой странице, для контентных — не рендерить вовсе).
 """
 
 from rest_framework import serializers
@@ -32,7 +37,12 @@ class PageBlockSerializer(serializers.ModelSerializer):
 
 
 class PageDetailSerializer(serializers.ModelSerializer):
-    """Полная страница со всеми видимыми блоками в правильном порядке."""
+    """Полная страница со всеми блоками в правильном порядке.
+
+    Отдаём все блоки, включая невидимые — фронт сам решает, рендерить или
+    скрывать, поскольку для header/footer и контентных блоков логика
+    «невидимости» различается.
+    """
 
     blocks = serializers.SerializerMethodField()
 
@@ -41,10 +51,5 @@ class PageDetailSerializer(serializers.ModelSerializer):
         fields = ("id", "title", "slug", "status", "blocks", "updated_at")
 
     def get_blocks(self, obj):
-        # Берём только видимые размещения, упорядоченные по position
-        placements = (
-            obj.page_blocks.filter(is_visible=True)
-            .select_related("block")
-            .order_by("position", "id")
-        )
+        placements = obj.page_blocks.select_related("block").order_by("position", "id")
         return PageBlockSerializer(placements, many=True, context=self.context).data
