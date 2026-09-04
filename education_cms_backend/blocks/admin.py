@@ -15,12 +15,16 @@ from navigation.models import HeaderLink
 from users.admin_mixins import AdminOnlyMixin, AdminWriteEditorReadMixin
 
 from .models import (
+    GoogleDocBlock,
+    GoogleSheetBlock,
     HtmlBlock,
     FaqBlock,
+    LinksBlock,
     Question,
     NewsFeed,
     HeaderLinksBlock,
     FooterContactsBlock,
+    VkVideoBlock,
 )
 
 
@@ -143,6 +147,59 @@ class NewsFeedAdmin(AdminWriteEditorReadMixin, admin.ModelAdmin):
             messages.warning(
                 request, f"Вместе с лентами удалено публикаций: {total_posts}."
             )
+
+
+# ...existing code...
+
+
+@admin.register(GoogleDocBlock)
+class GoogleDocBlockAdmin(AdminOnlyMixin, admin.ModelAdmin):
+    list_display = ("id", "admin_label", "doc_url", "created_at", "updated_at")
+    search_fields = ("admin_label", "doc_url")
+    fields = ("admin_label", "doc_url", "created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(GoogleSheetBlock)
+class GoogleSheetBlockAdmin(AdminOnlyMixin, admin.ModelAdmin):
+    list_display = ("id", "admin_label", "table_url", "created_at", "updated_at")
+    search_fields = ("admin_label", "table_url")
+    fields = ("admin_label", "table_url", "created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(VkVideoBlock)
+class VkVideoBlockAdmin(AdminOnlyMixin, admin.ModelAdmin):
+    list_display = ("id", "admin_label", "video_url", "created_at", "updated_at")
+    search_fields = ("admin_label", "video_url")
+    fields = ("admin_label", "video_url", "created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(LinksBlock)
+class LinksBlockAdmin(AdminOnlyMixin, admin.ModelAdmin):
+    list_display = ("id", "admin_label", "title", "created_at", "updated_at")
+    search_fields = ("admin_label", "title")
+    fields = (
+        "admin_label",
+        "title",
+        "description",
+        "link1",
+        "link1_desc",
+        "link2",
+        "link2_desc",
+        "link3",
+        "link3_desc",
+        "link4",
+        "link4_desc",
+        "link5",
+        "link5_desc",
+        "link6",
+        "link6_desc",
+        "created_at",
+        "updated_at",
+    )
+    readonly_fields = ("created_at", "updated_at")
 
 
 # ---------------------------------------------------------------------------

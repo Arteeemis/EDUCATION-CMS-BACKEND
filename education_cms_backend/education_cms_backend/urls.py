@@ -11,6 +11,7 @@ from django.conf.urls.static import static
 admin.site.site_header = "Система единого информационного окна"
 admin.site.site_title = "Информационное окно"
 admin.site.index_title = "Панель управления"
+admin.site.site_url = "http://localhost:4200"
 
 urlpatterns = [
     path("admin/", admin.site.urls),

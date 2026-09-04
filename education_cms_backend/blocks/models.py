@@ -138,6 +138,90 @@ class NewsFeed(Block):
         verbose_name_plural = "Новостные ленты"
 
 
+# ...existing code...
+
+
+class GoogleDocBlock(Block):
+    """Блок Google документа."""
+
+    doc_url = models.URLField(
+        verbose_name="Ссылка на Google Документ",
+        help_text="Вставьте публичную ссылку или embed-код Google Docs",
+    )
+
+    class Meta:
+        verbose_name = "Блок Google документа"
+        verbose_name_plural = "Блоки Google документов"
+
+
+class GoogleSheetBlock(Block):
+    """Блок Google таблицы."""
+
+    table_url = models.URLField(
+        verbose_name="Ссылка на Google Таблицу",
+        help_text="Вставьте публичную ссылку или embed-код таблицы",
+    )
+
+    class Meta:
+        verbose_name = "Блок Google таблицы"
+        verbose_name_plural = "Блоки Google таблиц"
+
+
+class VkVideoBlock(Block):
+    """Блок VK видео."""
+
+    video_url = models.URLField(
+        verbose_name="Ссылка на VK видео",
+        help_text="Публичная ссылка на видео VK",
+    )
+
+    class Meta:
+        verbose_name = "Блок VK видео"
+        verbose_name_plural = "Блоки VK видео"
+
+
+class LinksBlock(Block):
+    """Блок с набором ссылок."""
+
+    title = models.CharField(
+        verbose_name="Название блока с ссылками",
+        max_length=255,
+    )
+    description = models.TextField(
+        verbose_name="Описание",
+        blank=True,
+        null=True,
+    )
+    link1 = models.URLField(verbose_name="Ссылка №1")
+    link1_desc = models.CharField(
+        verbose_name="Описание ссылки №1", max_length=255, blank=True, null=True
+    )
+    link2 = models.URLField(verbose_name="Ссылка №2", blank=True, null=True)
+    link2_desc = models.CharField(
+        verbose_name="Описание ссылки №2", max_length=255, blank=True, null=True
+    )
+    link3 = models.URLField(verbose_name="Ссылка №3", blank=True, null=True)
+    link3_desc = models.CharField(
+        verbose_name="Описание ссылки №3", max_length=255, blank=True, null=True
+    )
+    link4 = models.URLField(verbose_name="Ссылка №4", blank=True, null=True)
+    link4_desc = models.CharField(
+        verbose_name="Описание ссылки №4", max_length=255, blank=True, null=True
+    )
+    link5 = models.URLField(verbose_name="Ссылка №5", blank=True, null=True)
+    link5_desc = models.CharField(
+        verbose_name="Описание ссылки №5", max_length=255, blank=True, null=True
+    )
+    link6 = models.URLField(verbose_name="Ссылка №6", blank=True, null=True)
+    link6_desc = models.CharField(
+        verbose_name="Описание ссылки №6", max_length=255, blank=True, null=True
+    )
+
+    class Meta:
+        verbose_name = "Блок ссылок"
+        verbose_name_plural = "Блоки ссылок"
+
+
 # ---------------------------------------------------------------------------
 # Меню в шапке (блок-контейнер)
 # ---------------------------------------------------------------------------

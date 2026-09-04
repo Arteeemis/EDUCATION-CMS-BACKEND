@@ -103,6 +103,72 @@ class NewsFeedSerializer(serializers.ModelSerializer):
         return request.build_absolute_uri(path) if request else path
 
 
+# ...existing code...
+from .models import GoogleDocBlock, GoogleSheetBlock, VkVideoBlock, LinksBlock
+
+
+class GoogleDocBlockSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GoogleDocBlock
+        fields = ("id", "type", "admin_label", "doc_url")
+
+    def get_type(self, obj):
+        return "google_doc"
+
+
+class GoogleSheetBlockSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GoogleSheetBlock
+        fields = ("id", "type", "admin_label", "table_url")
+
+    def get_type(self, obj):
+        return "google_sheet"
+
+
+class VkVideoBlockSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = VkVideoBlock
+        fields = ("id", "type", "admin_label", "video_url")
+
+    def get_type(self, obj):
+        return "vk_video"
+
+
+class LinksBlockSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LinksBlock
+        fields = (
+            "id",
+            "type",
+            "admin_label",
+            "title",
+            "description",
+            "link1",
+            "link1_desc",
+            "link2",
+            "link2_desc",
+            "link3",
+            "link3_desc",
+            "link4",
+            "link4_desc",
+            "link5",
+            "link5_desc",
+            "link6",
+            "link6_desc",
+        )
+
+    def get_type(self, obj):
+        return "links"
+
+
 # ---------------------------------------------------------------------------
 # Меню в шапке (контейнер ссылок)
 # ---------------------------------------------------------------------------
@@ -169,6 +235,10 @@ class PolymorphicBlockSerializer(serializers.Serializer):
         NewsFeed: NewsFeedSerializer,
         HeaderLinksBlock: HeaderLinksBlockSerializer,
         FooterContactsBlock: FooterContactsBlockSerializer,
+        GoogleDocBlock: GoogleDocBlockSerializer,
+        GoogleSheetBlock: GoogleSheetBlockSerializer,
+        VkVideoBlock: VkVideoBlockSerializer,
+        LinksBlock: LinksBlockSerializer,
     }
 
     def to_representation(self, instance):
